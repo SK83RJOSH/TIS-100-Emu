@@ -87,10 +87,13 @@
   <ItemGroup>
     <ClInclude Include="Core\include\Node.hpp" />
     <ClInclude Include="Core\include\Port.hpp" />
+    <ClInclude Include="Core\include\Instruction.hpp" />
+    <ClInclude Include="Core\include\VirtualMachine.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Core\src\Node.cpp" />
     <ClCompile Include="Core\src\Port.cpp" />
+    <ClCompile Include="Core\src\VirtualMachine.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
