@@ -19,7 +19,8 @@ namespace TIS
 			RIGHT,
 			ANY,
 			LAST,
-			ACC
+			ACC,
+			NIL
 		};
 
 		enum class State : unsigned char

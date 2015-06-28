@@ -6,9 +6,10 @@
 int main()
 {
 	auto testString = 
-		"MOV LEFT, ACC\n"
+		"MOV LEFT ACC\n"
 		"ADD ACC\n"
-		"MOV ACC, RIGHT\n";
+		"MOV ACC, RIGHT\n"
+		"NOP\n";
 
 	std::cout << "Assembling test case: " << std::endl;
 	std::cout << testString << std::endl;
@@ -23,7 +24,6 @@ int main()
 		std::cerr << "Exception while assembling: " << e.what();
 		return EXIT_FAILURE;
 	}
-	std::cout << "Instruction count: " << bytecode.size() << std::endl;
 
 	std::cout << "Disassembled assembly: " << std::endl;
 	try

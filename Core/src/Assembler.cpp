@@ -87,6 +87,8 @@ namespace TIS { namespace Assembler	{
 			return Node::Destination::LAST;
 		else if (token.text == "ACC")
 			return Node::Destination::ACC;
+		else if (token.text == "NIL")
+			return Node::Destination::NIL;
 		else
 			throw std::runtime_error("parseDestination: Invalid destination: " + token.text);
 	}
@@ -122,6 +124,19 @@ namespace TIS { namespace Assembler	{
 		return instruction;
 	}
 
+	Instruction parseNop(std::queue<Token>& tokens)
+	{
+		Instruction instruction;
+		instruction.opcode = TIS::Opcode::ADD;
+		
+		// Pop instruction token
+		tokens.pop();
+
+		instruction.arguments[0].destination = Node::Destination::NIL;
+
+		return instruction;
+	}
+
 	std::vector<Instruction> assemble(std::string const& code)
 	{
 		auto tokens = tokenize(code);
@@ -135,6 +150,8 @@ namespace TIS { namespace Assembler	{
 				instructions.push_back(parseMov(tokens));
 			else if (token.text == "ADD")
 				instructions.push_back(parseAdd(tokens));
+			else if (token.text == "NOP")
+				instructions.push_back(parseNop(tokens));
 			else
 				throw std::logic_error("Unhandled token! Text: " + token.text);
 		}

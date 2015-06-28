@@ -29,6 +29,9 @@ namespace TIS { namespace Disassembler {
 		case Node::Destination::ACC:
 			stream << "ACC";
 			break;
+		case Node::Destination::NIL:
+			stream << "NIL";
+			break;
 		default:
 			throw std::logic_error("Tried to disassemble invalid destination");
 		}
