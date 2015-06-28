@@ -7,38 +7,37 @@ namespace TIS
 {
 	void Port::write(Node* node, short value)
 	{
-		if (this->state == State::HAS_DATA) {
-			if (this->lastNode != node)
-			{
-				this->lastNode->setState(Node::State::DEADLOCK);
-				node->setState(Node::State::DEADLOCK);
-			}
-		}
-		else
+		if (this->state == State::EMPTY || this->state == State::WAITING_FOR_DATA && this->lastNode != node)
 		{
 			this->state = State::HAS_DATA;
 			this->value = std::min(std::max(value, static_cast<short>(-999)), static_cast<short>(999));
 			this->lastNode = node;
 		}
+		else
+		{
+			this->lastNode->setState(Node::State::DEADLOCK);
+			node->setState(Node::State::DEADLOCK);
+		}
 	}
 
 	bool Port::read(Node* node, short& value)
 	{
-		if (this->state == State::HAS_DATA) {
+		if (this->state == State::HAS_DATA && this->lastNode != node)
+		{
 			this->state = State::EMPTY;
 			value = this->value;
 
 			return true;
 		}
-		else
+		else if (this->state == State::EMPTY)
 		{
-			if (this->state == State::WAITING_FOR_DATA && this->lastNode != node)
-			{
-				this->lastNode->setState(Node::State::DEADLOCK);
-				node->setState(Node::State::DEADLOCK);
-			}
-
 			this->state = State::WAITING_FOR_DATA;
+			this->lastNode = node;
+		}
+		else if (this->state == State::HAS_DATA || this->state == State::WAITING_FOR_DATA && this->lastNode != node)
+		{
+			this->lastNode->setState(Node::State::DEADLOCK);
+			node->setState(Node::State::DEADLOCK);
 		}
 
 		return false;
