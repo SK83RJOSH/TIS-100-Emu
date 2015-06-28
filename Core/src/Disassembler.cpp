@@ -54,9 +54,38 @@ namespace TIS { namespace Disassembler {
 		stream << std::endl;
 	}
 
+	void disassembleSwp(Instruction instruction, std::stringstream& stream)
+	{
+		stream << "SWP" << std::endl;
+	}
+
+	void disassembleSav(Instruction instruction, std::stringstream& stream)
+	{
+		stream << "SAV" << std::endl;
+	}
+
 	void disassembleAdd(Instruction instruction, std::stringstream& stream)
 	{
 		stream << "ADD ";
+		disassembleArgument(instruction.arguments[0], stream);
+		stream << std::endl;
+	}
+
+	void disassembleSub(Instruction instruction, std::stringstream& stream)
+	{
+		stream << "SUB ";
+		disassembleArgument(instruction.arguments[0], stream);
+		stream << std::endl;
+	}
+
+	void disassembleNeg(Instruction instruction, std::stringstream& stream)
+	{
+		stream << "NEG" << std::endl;
+	}
+
+	void disassembleJro(Instruction instruction, std::stringstream& stream)
+	{
+		stream << "JRO ";
 		disassembleArgument(instruction.arguments[0], stream);
 		stream << std::endl;
 	}
@@ -72,8 +101,23 @@ namespace TIS { namespace Disassembler {
 			case TIS::Opcode::MOV:
 				disassembleMov(instruction, stream);
 				break;
+			case TIS::Opcode::SWP:
+				disassembleSwp(instruction, stream);
+				break;
+			case TIS::Opcode::SAV:
+				disassembleSav(instruction, stream);
+				break;
 			case TIS::Opcode::ADD:
 				disassembleAdd(instruction, stream);
+				break;
+			case TIS::Opcode::SUB:
+				disassembleSub(instruction, stream);
+				break;
+			case TIS::Opcode::NEG:
+				disassembleNeg(instruction, stream);
+				break;
+			case TIS::Opcode::JRO:
+				disassembleJro(instruction, stream);
 				break;
 			}
 		}

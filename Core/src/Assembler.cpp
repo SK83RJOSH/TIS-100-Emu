@@ -26,9 +26,13 @@ namespace TIS { namespace Assembler	{
 		{
 			if (currentToken.text.empty())
 			{
-				if (isalpha(c))
+				if (isalnum(c))
 				{
 					currentToken.text += c;
+					if (isalpha(c))
+						currentToken.type = Token::Type::IDENTIFIER;
+					else
+						currentToken.type = Token::Type::NUMBER;
 				}
 				else if (isspace(c))
 				{
@@ -44,6 +48,9 @@ namespace TIS { namespace Assembler	{
 			else if (isalnum(c))
 			{
 				currentToken.text += c;
+				if (currentToken.type == Token::Type::NUMBER && isalpha(c))
+					throw std::logic_error("Encountered alphabetical character "
+						"while lexing number");
 			}
 			else if (c == ':')
 			{
@@ -68,10 +75,14 @@ namespace TIS { namespace Assembler	{
 		return tokens;
 	}
 
-	Node::Destination parseDestination(Token const& token)
+	Node::Destination parseDestination(std::queue<Token>& tokens)
 	{
+		auto token = tokens.front();
+
 		if (token.type != Token::Type::IDENTIFIER)
 			throw std::logic_error("parseDestination: Expected IDENTIFIER");
+
+		tokens.pop();
 
 		if (token.text == "UP")
 			return Node::Destination::UP;
@@ -93,6 +104,31 @@ namespace TIS { namespace Assembler	{
 			throw std::runtime_error("parseDestination: Invalid destination: " + token.text);
 	}
 
+	Instruction::Argument parseArgument(std::queue<Token>& tokens, bool destinationOnly = false)
+	{
+		Instruction::Argument ret;
+
+		auto token = tokens.front();
+
+		if (token.type == Token::Type::IDENTIFIER || destinationOnly)
+		{
+			ret.destination = parseDestination(tokens);
+		}
+		else if (token.type == Token::Type::NUMBER)
+		{
+			ret.offset = std::stoi(token.text);
+			ret.isOffset = true;
+
+			tokens.pop();
+		}
+		else
+		{
+			throw std::logic_error("parseArgument: Invalid token type");
+		}
+
+		return ret;
+	}
+
 	Instruction parseMov(std::queue<Token>& tokens)
 	{
 		Instruction instruction;
@@ -101,10 +137,29 @@ namespace TIS { namespace Assembler	{
 		// Pop instruction token
 		tokens.pop();
 
-		instruction.arguments[0].destination = parseDestination(tokens.front());
+		instruction.arguments[0] = parseArgument(tokens);
+		instruction.arguments[1] = parseArgument(tokens, true);
+
+		return instruction;
+	}
+
+	Instruction parseSav(std::queue<Token>& tokens)
+	{
+		Instruction instruction;
+		instruction.opcode = TIS::Opcode::SAV;
+		
+		// Pop instruction token
 		tokens.pop();
 
-		instruction.arguments[1].destination = parseDestination(tokens.front());
+		return instruction;
+	}
+
+	Instruction parseSwp(std::queue<Token>& tokens)
+	{
+		Instruction instruction;
+		instruction.opcode = TIS::Opcode::SWP;
+		
+		// Pop instruction token
 		tokens.pop();
 
 		return instruction;
@@ -118,8 +173,20 @@ namespace TIS { namespace Assembler	{
 		// Pop instruction token
 		tokens.pop();
 
-		instruction.arguments[0].destination = parseDestination(tokens.front());
+		instruction.arguments[0] = parseArgument(tokens);
+
+		return instruction;
+	}
+
+	Instruction parseSub(std::queue<Token>& tokens)
+	{
+		Instruction instruction;
+		instruction.opcode = TIS::Opcode::SUB;
+		
+		// Pop instruction token
 		tokens.pop();
+
+		instruction.arguments[0] = parseArgument(tokens);
 
 		return instruction;
 	}
@@ -137,6 +204,30 @@ namespace TIS { namespace Assembler	{
 		return instruction;
 	}
 
+	Instruction parseNeg(std::queue<Token>& tokens)
+	{
+		Instruction instruction;
+		instruction.opcode = TIS::Opcode::NEG;
+		
+		// Pop instruction token
+		tokens.pop();
+
+		return instruction;
+	}
+
+	Instruction parseJro(std::queue<Token>& tokens)
+	{
+		Instruction instruction;
+		instruction.opcode = TIS::Opcode::JRO;
+		
+		// Pop instruction token
+		tokens.pop();
+
+		instruction.arguments[0] = parseArgument(tokens);
+
+		return instruction;
+	}
+	
 	std::vector<Instruction> assemble(std::string const& code)
 	{
 		auto tokens = tokenize(code);
@@ -148,10 +239,20 @@ namespace TIS { namespace Assembler	{
 
 			if (token.text == "MOV")
 				instructions.push_back(parseMov(tokens));
+			else if (token.text == "SWP")
+				instructions.push_back(parseSwp(tokens));
+			else if (token.text == "SAV")
+				instructions.push_back(parseSav(tokens));
 			else if (token.text == "ADD")
 				instructions.push_back(parseAdd(tokens));
+			else if (token.text == "SUB")
+				instructions.push_back(parseSub(tokens));
 			else if (token.text == "NOP")
 				instructions.push_back(parseNop(tokens));
+			else if (token.text == "NEG")
+				instructions.push_back(parseNeg(tokens));
+			else if (token.text == "JRO")
+				instructions.push_back(parseJro(tokens));
 			else
 				throw std::logic_error("Unhandled token! Text: " + token.text);
 		}

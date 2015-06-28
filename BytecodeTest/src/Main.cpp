@@ -8,8 +8,13 @@ int main()
 	auto testString = 
 		"MOV LEFT ACC\n"
 		"ADD ACC\n"
+		"SUB 8\n"
+		"NEG\n"
 		"MOV ACC, RIGHT\n"
-		"NOP\n";
+		"SAV\n"
+		"SWP\n"
+		"NOP\n"
+		"JRO 0\n";
 
 	std::cout << "Assembling test case: " << std::endl;
 	std::cout << testString << std::endl;
