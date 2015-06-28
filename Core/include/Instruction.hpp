@@ -2,11 +2,13 @@
 
 #include "Node.hpp"
 
+#include <array>
+
 namespace TIS
 {
 	class Port;
 
-	enum class Opcode
+	enum class Opcode : unsigned char
 	{
 		/* NOP is a pseudoinstruction */
 		MOV,
@@ -29,15 +31,15 @@ namespace TIS
 		
 		struct Argument
 		{
-			bool isOffset;
+			bool isOffset = false;
 
 			union
 			{
-				Node::Port port;
+				Node::Destination destination;
 				short offset;
 			};
 		};
 
-		Argument arguments[2];
+		std::array<Argument, 2> arguments;
 	};
 }

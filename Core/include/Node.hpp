@@ -7,23 +7,22 @@
 
 namespace TIS
 {
-	class Port;
-
 	class Node
 	{
 	friend class Port;
 	public:
-		enum class Port
+		enum class Destination : unsigned char
 		{
 			UP,
 			DOWN,
 			LEFT,
 			RIGHT,
 			ANY,
-			LAST
+			LAST,
+			ACC
 		};
 
-		enum class State
+		enum class State : unsigned char
 		{
 			UNLOCKED,
 			LOCKED,
@@ -37,6 +36,6 @@ namespace TIS
 		void setState(State state);
 	private:
 		State state;
-		std::map<Port, TIS::Port> ports;
+		std::map<Destination, Port> ports;
 	};
 }

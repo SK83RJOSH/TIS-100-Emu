@@ -16,3 +16,20 @@ solution "Tiscord"
 		filter "configurations:Release"
 			defines { "NDEBUG" }
 			optimize "On"
+
+	project "BytecodeTest"
+		kind "ConsoleApp"
+		language "C++"
+		targetdir "bin/%{cfg.buildcfg}"
+
+		includedirs { "Core/include/", "BytecodeTest/include/" }
+		links { "Core" }
+		files { "BytecodeTest/include/**.hpp", "BytecodeTest/src/**.cpp" }
+
+		filter "configurations:Debug"
+			defines { "DEBUG" }
+			flags { "Symbols" }
+
+		filter "configurations:Release"
+			defines { "NDEBUG" }
+			optimize "On"
