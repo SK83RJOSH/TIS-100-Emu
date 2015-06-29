@@ -1,6 +1,7 @@
 #include "Disassembler.hpp"
 
 #include <sstream>
+#include <set>
 
 namespace TIS { namespace Disassembler {
 
@@ -90,13 +91,57 @@ namespace TIS { namespace Disassembler {
 		stream << std::endl;
 	}
 
+	void disassembleJmp(Instruction instruction, size_t index, std::stringstream& stream)
+	{
+		auto location = index + instruction.arguments[0].offset;
+
+		switch (instruction.opcode)
+		{
+		case Opcode::JMP:
+			stream << "JMP ";
+			break;
+		case Opcode::JEZ:
+			stream << "JEZ ";
+			break;
+		case Opcode::JNZ:
+			stream << "JNZ ";
+			break;
+		case Opcode::JGZ:
+			stream << "JGZ ";
+			break;
+		case Opcode::JLZ:
+			stream << "JLZ ";
+			break;
+		}
+		stream << "loc_" << location << std::endl;
+	}
+
 	std::string disassemble(Instruction const* instructions, size_t count)
 	{
 		std::stringstream stream;
 
+		// Find all labels
+		auto opcodesBegin = LabelOpcodes.begin();
+		auto opcodesEnd = LabelOpcodes.end();
+
+		std::set<size_t> labelLocations;
 		for (size_t i = 0u; i < count; ++i)
 		{
 			auto& instruction = instructions[i];
+
+			if (std::find(opcodesBegin, opcodesEnd, instruction.opcode) != opcodesEnd)
+			{
+				auto labelLocation = i + instruction.arguments[0].offset;
+				labelLocations.insert(labelLocation);
+			}
+		}
+
+		for (size_t i = 0u; i < count; ++i)
+		{
+			auto& instruction = instructions[i];
+
+			if (labelLocations.find(i) != labelLocations.end())
+				stream << "loc_" << i << ":" << std::endl;
 
 			switch (instruction.opcode)
 			{
@@ -121,6 +166,15 @@ namespace TIS { namespace Disassembler {
 			case TIS::Opcode::JRO:
 				disassembleJro(instruction, stream);
 				break;
+			case TIS::Opcode::JMP:
+			case TIS::Opcode::JEZ:
+			case TIS::Opcode::JNZ:
+			case TIS::Opcode::JGZ:
+			case TIS::Opcode::JLZ:
+				disassembleJmp(instruction, i, stream);
+				break;
+			default:
+				throw std::logic_error("Unhandled opcode!");
 			}
 		}
 

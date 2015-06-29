@@ -8,15 +8,27 @@
 int main()
 {
 	auto testString = 
+		"label_0:\n"
 		"MOV LEFT ACC\n"
+		"label_1:\n"
 		"ADD ACC\n"
+		"label_2:\n"
 		"SUB 8\n"
+		"label_3:\n"
 		"NEG\n"
 		"MOV ACC, RIGHT\n"
 		"SAV\n"
 		"SWP\n"
+		"JMP label_4\n"
+		"label_4:\n"
 		"NOP\n"
-		"JRO 0\n";
+		"JRO 1\n"
+		"JMP label_0\n"
+		"JEZ label_1\n"
+		"JNZ label_2\n"
+		"JGZ label_3\n"
+		"JLZ label_4\n"
+		;
 
 	std::cout << "Assembling test case: " << std::endl;
 	std::cout << testString << std::endl;

@@ -25,6 +25,11 @@ namespace TIS
 		JRO
 	};
 
+	static const std::array<Opcode, 5> LabelOpcodes = {
+		Opcode::JMP, Opcode::JEZ, Opcode::JNZ, 
+		Opcode::JGZ, Opcode::JLZ
+	};
+
 	struct Instruction
 	{
 		Opcode opcode;

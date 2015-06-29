@@ -1,6 +1,6 @@
 #include "Assembler.hpp"
 
-#include <queue>
+#include <deque>
 
 namespace TIS { namespace Assembler	{
 	
@@ -17,16 +17,24 @@ namespace TIS { namespace Assembler	{
 		std::string text;
 	};
 
-	std::queue<Token> tokenize(std::string const& code)
+	typedef std::deque<Token> Tokens;
+	typedef std::map<std::string, short> Labels;
+
+	bool isValidIdentifierCharacter(char c)
 	{
-		std::queue<Token> tokens;
+		return isalnum(c) || (c == '_');
+	}
+
+	Tokens tokenize(std::string const& code)
+	{
+		Tokens tokens;
 		Token currentToken;
 
 		for (auto c : code)
 		{
 			if (currentToken.text.empty())
 			{
-				if (isalnum(c))
+				if (isValidIdentifierCharacter(c))
 				{
 					currentToken.text += c;
 					if (isalpha(c))
@@ -45,7 +53,7 @@ namespace TIS { namespace Assembler	{
 						"invalid starting character");
 				}
 			}
-			else if (isalnum(c))
+			else if (isValidIdentifierCharacter(c))
 			{
 				currentToken.text += c;
 				if (currentToken.type == Token::Type::NUMBER && isalpha(c))
@@ -63,26 +71,26 @@ namespace TIS { namespace Assembler	{
 			}
 			else if (isspace(c) || c == '\n')
 			{
-				tokens.push(currentToken);
+				tokens.push_back(currentToken);
 				currentToken = Token();
 			}
 		}
 
 		// Handle case where a newline is not present at the end
 		if (!currentToken.text.empty())
-			tokens.push(currentToken);
+			tokens.push_back(currentToken);
 
 		return tokens;
 	}
 
-	Node::Destination parseDestination(std::queue<Token>& tokens)
+	Node::Destination parseDestination(Tokens& tokens)
 	{
 		auto token = tokens.front();
 
 		if (token.type != Token::Type::IDENTIFIER)
 			throw std::logic_error("parseDestination: Expected IDENTIFIER");
 
-		tokens.pop();
+		tokens.pop_front();
 
 		if (token.text == "UP")
 			return Node::Destination::UP;
@@ -101,10 +109,10 @@ namespace TIS { namespace Assembler	{
 		else if (token.text == "NIL")
 			return Node::Destination::NIL;
 		else
-			throw std::runtime_error("parseDestination: Invalid destination: " + token.text);
+			throw std::logic_error("parseDestination: Invalid destination: " + token.text);
 	}
 
-	Instruction::Argument parseArgument(std::queue<Token>& tokens, bool destinationOnly = false)
+	Instruction::Argument parseArgument(Tokens& tokens, bool destinationOnly = false)
 	{
 		Instruction::Argument ret;
 
@@ -119,7 +127,7 @@ namespace TIS { namespace Assembler	{
 			ret.offset = std::stoi(token.text);
 			ret.isOffset = true;
 
-			tokens.pop();
+			tokens.pop_front();
 		}
 		else
 		{
@@ -129,13 +137,33 @@ namespace TIS { namespace Assembler	{
 		return ret;
 	}
 
-	Instruction parseMov(std::queue<Token>& tokens)
+	Instruction::Argument parseLabel(Tokens& tokens, Labels& labels, size_t index)
+	{
+		Instruction::Argument ret;
+
+		auto token = tokens.front();
+		if (token.type != Token::Type::IDENTIFIER)
+			throw std::logic_error("parseLabel: Expecting identifier");
+
+		auto text = token.text;
+		if (labels.find(text) == labels.end())
+			throw std::logic_error("parseLabel: Couldn't find label");
+
+		ret.isOffset = true;
+		ret.offset = labels[text];
+
+		tokens.pop_front();
+
+		return ret;
+	}
+
+	Instruction parseMov(Tokens& tokens)
 	{
 		Instruction instruction;
 		instruction.opcode = TIS::Opcode::MOV;
 		
 		// Pop instruction token
-		tokens.pop();
+		tokens.pop_front();
 
 		instruction.arguments[0] = parseArgument(tokens);
 		instruction.arguments[1] = parseArgument(tokens, true);
@@ -143,87 +171,100 @@ namespace TIS { namespace Assembler	{
 		return instruction;
 	}
 
-	Instruction parseSav(std::queue<Token>& tokens)
+	Instruction parseSav(Tokens& tokens)
 	{
 		Instruction instruction;
 		instruction.opcode = TIS::Opcode::SAV;
 		
 		// Pop instruction token
-		tokens.pop();
+		tokens.pop_front();
 
 		return instruction;
 	}
 
-	Instruction parseSwp(std::queue<Token>& tokens)
+	Instruction parseSwp(Tokens& tokens)
 	{
 		Instruction instruction;
 		instruction.opcode = TIS::Opcode::SWP;
 		
 		// Pop instruction token
-		tokens.pop();
+		tokens.pop_front();
 
 		return instruction;
 	}
 
-	Instruction parseAdd(std::queue<Token>& tokens)
+	Instruction parseAdd(Tokens& tokens)
 	{
 		Instruction instruction;
 		instruction.opcode = TIS::Opcode::ADD;
 		
 		// Pop instruction token
-		tokens.pop();
+		tokens.pop_front();
 
 		instruction.arguments[0] = parseArgument(tokens);
 
 		return instruction;
 	}
 
-	Instruction parseSub(std::queue<Token>& tokens)
+	Instruction parseSub(Tokens& tokens)
 	{
 		Instruction instruction;
 		instruction.opcode = TIS::Opcode::SUB;
 		
 		// Pop instruction token
-		tokens.pop();
+		tokens.pop_front();
 
 		instruction.arguments[0] = parseArgument(tokens);
 
 		return instruction;
 	}
 
-	Instruction parseNop(std::queue<Token>& tokens)
+	Instruction parseNop(Tokens& tokens)
 	{
 		Instruction instruction;
 		instruction.opcode = TIS::Opcode::ADD;
 		
 		// Pop instruction token
-		tokens.pop();
+		tokens.pop_front();
 
 		instruction.arguments[0].destination = Node::Destination::NIL;
 
 		return instruction;
 	}
 
-	Instruction parseNeg(std::queue<Token>& tokens)
+	Instruction parseNeg(Tokens& tokens)
 	{
 		Instruction instruction;
 		instruction.opcode = TIS::Opcode::NEG;
 		
 		// Pop instruction token
-		tokens.pop();
+		tokens.pop_front();
 
 		return instruction;
 	}
 
-	Instruction parseJro(std::queue<Token>& tokens)
+	Instruction parseJro(Tokens& tokens)
 	{
 		Instruction instruction;
 		instruction.opcode = TIS::Opcode::JRO;
 		
 		// Pop instruction token
-		tokens.pop();
+		tokens.pop_front();
 
 		instruction.arguments[0] = parseArgument(tokens);
+
+		return instruction;
+	}
+
+	Instruction parseJmp(Opcode opcode, Tokens& tokens, Labels& labels, size_t index)
+	{
+		Instruction instruction;
+		instruction.opcode = opcode;
+		
+		// Pop instruction token
+		tokens.pop_front();
+
+		instruction.arguments[0] = parseLabel(tokens, labels, index);
 
 		return instruction;
 	}
@@ -232,29 +273,85 @@ namespace TIS { namespace Assembler	{
 	{
 		auto tokens = tokenize(code);
 		std::vector<Instruction> instructions;
+		std::map<size_t, size_t> labelLocations;
+		Labels labelIndices;
 
+		size_t index = 0;
+		// Do an initial pass in order to create labels
+		for (auto& token : tokens)
+		{
+			if (token.type == Token::Type::LABEL)
+			{
+				if (labelIndices.find(token.text) != labelIndices.end())
+					throw std::logic_error("Attempted to redefine label: " + token.text);
+
+				labelIndices[token.text] = index++;
+				continue;
+			}
+		}
+
+		// Do pass to synthesize instructions
+		index = 0;
 		while (tokens.size())
 		{
 			auto token = tokens.front();
 
+			if (token.type == Token::Type::LABEL)
+			{
+				labelLocations[labelIndices[token.text]] = index;
+				tokens.pop_front();
+				continue;
+			}
+
+			TIS::Instruction instruction;
+
+			// Handle instructions
 			if (token.text == "MOV")
-				instructions.push_back(parseMov(tokens));
+				instruction = parseMov(tokens);
 			else if (token.text == "SWP")
-				instructions.push_back(parseSwp(tokens));
+				instruction = parseSwp(tokens);
 			else if (token.text == "SAV")
-				instructions.push_back(parseSav(tokens));
+				instruction = parseSav(tokens);
 			else if (token.text == "ADD")
-				instructions.push_back(parseAdd(tokens));
+				instruction = parseAdd(tokens);
 			else if (token.text == "SUB")
-				instructions.push_back(parseSub(tokens));
+				instruction = parseSub(tokens);
 			else if (token.text == "NOP")
-				instructions.push_back(parseNop(tokens));
+				instruction = parseNop(tokens);
 			else if (token.text == "NEG")
-				instructions.push_back(parseNeg(tokens));
+				instruction = parseNeg(tokens);
 			else if (token.text == "JRO")
-				instructions.push_back(parseJro(tokens));
+				instruction = parseJro(tokens);
+			else if (token.text == "JMP")
+				instruction = parseJmp(Opcode::JMP, tokens, labelIndices, index);
+			else if (token.text == "JEZ")
+				instruction = parseJmp(Opcode::JEZ, tokens, labelIndices, index);
+			else if (token.text == "JNZ")
+				instruction = parseJmp(Opcode::JNZ, tokens, labelIndices, index);
+			else if (token.text == "JGZ")
+				instruction = parseJmp(Opcode::JGZ, tokens, labelIndices, index);
+			else if (token.text == "JLZ")
+				instruction = parseJmp(Opcode::JLZ, tokens, labelIndices, index);
 			else
 				throw std::logic_error("Unhandled token! Text: " + token.text);
+
+			instructions.push_back(instruction);
+			++index;
+		}
+
+		auto opcodesBegin = LabelOpcodes.begin();
+		auto opcodesEnd = LabelOpcodes.end();
+
+		index = 0;
+		// Final pass to remap label indices to label locations
+		for (auto& instruction : instructions)
+		{
+			if (std::find(opcodesBegin, opcodesEnd, instruction.opcode) != opcodesEnd)
+			{
+				instruction.arguments[0].offset = 
+					labelLocations[instruction.arguments[0].offset] - index;
+			}
+			++index;
 		}
 
 		return instructions;
