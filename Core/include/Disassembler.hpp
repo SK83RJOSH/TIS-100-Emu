@@ -6,6 +6,6 @@
 
 namespace TIS { namespace Disassembler {
 
-	std::string disassemble(std::vector<Instruction> const& bytecode);
+	std::string disassemble(Instruction const* instructions, size_t count);
 
 } }

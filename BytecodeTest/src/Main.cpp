@@ -3,6 +3,7 @@
 #include "ComputeNode.hpp"
 
 #include <iostream>
+#include <iomanip>
 
 int main()
 {
@@ -34,7 +35,7 @@ int main()
 	std::cout << "Disassembled assembly: " << std::endl;
 	try
 	{
-		std::cout << TIS::Disassembler::disassemble(bytecode);
+		std::cout << TIS::Disassembler::disassemble(bytecode.data(), bytecode.size());
 	}
 	catch (std::exception const& e)
 	{
@@ -60,29 +61,18 @@ int main()
 
 		std::cout << "\nComputeNode Test:" << std::endl;
 
-		node.step();
-		std::cout << "ACC = " << node.getACC() << "; Expected 2." << std::endl;
-
-		node.step();
-		std::cout << "ACC = " << node.getACC() << "; Expected 4." << std::endl;
-
-		node.step();
-		std::cout << "ACC = " << node.getACC() << "; Expected 1." << std::endl;
-
-		node.step();
-		std::cout << "ACC = " << node.getACC() << "; Expected -1." << std::endl;
-
-		node.step();
-		node.step();
-
-		node.step();
-		std::cout << "ACC = " << node.getACC() << "; Expected 0." << std::endl;
-
-		node.step();
-		std::cout << "ACC = " << node.getACC() << "; Expected 1." << std::endl;
-
-		node.step();
-		std::cout << "BAK = " << node.getBAK() << "; Expected 1." << std::endl;
+		for (size_t i = 0; i < node.getInstructionCount(); i++)
+		{
+			auto instruction = node.getCurrentInstruction();
+			std::cout << "----------------------" << std::endl;
+			std::cout << TIS::Disassembler::disassemble(&instruction, 1);
+			node.step();
+			std::cout	<< std::right
+						<< "ACC: " << std::setw(4) << node.getACC() << " | "
+						<< "BAK: " << std::setw(4) << node.getBAK() 
+						<< std::endl;
+			std::cout << "----------------------" << std::endl;
+		}
 	}
 	catch (std::exception const& e)
 	{

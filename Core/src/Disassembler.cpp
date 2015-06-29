@@ -90,12 +90,14 @@ namespace TIS { namespace Disassembler {
 		stream << std::endl;
 	}
 
-	std::string disassemble(std::vector<Instruction> const& bytecode)
+	std::string disassemble(Instruction const* instructions, size_t count)
 	{
 		std::stringstream stream;
 
-		for (auto& instruction : bytecode)
+		for (size_t i = 0u; i < count; ++i)
 		{
+			auto& instruction = instructions[i];
+
 			switch (instruction.opcode)
 			{
 			case TIS::Opcode::MOV:

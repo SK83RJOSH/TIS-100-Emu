@@ -30,7 +30,7 @@ namespace TIS
 		if (this->getState() == State::DEADLOCK || this->instructions.size() == 0) 
 			return;
 
-		auto instruction = this->instructions[this->instructionPointer];
+		auto instruction = this->getCurrentInstruction();
 		auto& args = instruction.arguments;
 
 		switch (instruction.opcode)
@@ -97,6 +97,16 @@ namespace TIS
 		}
 
 		this->instructionPointer = ++this->instructionPointer % this->instructions.size();
+	}
+
+	Instruction ComputeNode::getCurrentInstruction()
+	{
+		return this->instructions[this->instructionPointer];
+	}
+
+	size_t ComputeNode::getInstructionCount()
+	{
+		return this->instructions.size();
 	}
 
 	bool ComputeNode::read(Destination destination, short& value)

@@ -17,7 +17,11 @@ namespace TIS
 		void load(std::string const& code);
 		short getACC();
 		short getBAK();
+
 		virtual void step();
+		Instruction getCurrentInstruction();
+		size_t getInstructionCount();
+
 	private:
 		short acc = 0;
 		short bak = 0;
