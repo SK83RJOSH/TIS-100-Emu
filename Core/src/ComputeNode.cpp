@@ -2,8 +2,6 @@
 #include "Assembler.hpp"
 #include "Util.hpp"
 
-#include <algorithm>
-
 namespace TIS
 {
 	ComputeNode::ComputeNode()
@@ -60,7 +58,7 @@ namespace TIS
 				return;
 
 			auto newInstructionPointer = this->instructionPointer + value;			
-			this->instructionPointer = Util::clamp(newInstructionPointer, 0u, this->instructions.size());
+			this->instructionPointer = Util::clamp(newInstructionPointer, 0u, this->instructions.size() - 1);
 			return;
 		}
 		case Opcode::ADD:

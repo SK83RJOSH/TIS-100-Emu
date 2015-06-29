@@ -2,6 +2,7 @@
 #include "Disassembler.hpp"
 #include "ComputeNode.hpp"
 
+#include <chrono>
 #include <iostream>
 #include <iomanip>
 
@@ -61,9 +62,12 @@ int main()
 
 		std::cout << "\nComputeNode Test:" << std::endl;
 
+		auto start = std::chrono::high_resolution_clock::now();
+
 		for (size_t i = 0; i < node.getInstructionCount(); i++)
 		{
 			auto instruction = node.getCurrentInstruction();
+
 			std::cout << "----------------------" << std::endl;
 			std::cout << TIS::Disassembler::disassemble(&instruction, 1);
 			node.step();
@@ -73,6 +77,10 @@ int main()
 						<< std::endl;
 			std::cout << "----------------------" << std::endl;
 		}
+
+		std::cout << std::chrono::duration_cast<std::chrono::milliseconds>(
+			std::chrono::high_resolution_clock::now() - start
+		).count() << "ms" << std::endl;
 	}
 	catch (std::exception const& e)
 	{
