@@ -11,6 +11,8 @@ namespace TIS
 	{
 	friend class Port;
 	public:
+		virtual ~Node() {}
+
 		enum class Destination : unsigned char
 		{
 			UP,

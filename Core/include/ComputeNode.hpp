@@ -12,6 +12,8 @@ namespace TIS
 	{
 	public:
 		ComputeNode();
+		virtual ~ComputeNode() {}
+
 		void load(std::string const& code);
 		short getACC();
 		short getBAK();
