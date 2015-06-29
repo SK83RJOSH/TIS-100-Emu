@@ -94,7 +94,7 @@ namespace TIS
 		{
 			Destination ports[4] = { Destination::LEFT, Destination::UP, Destination::RIGHT, Destination::DOWN };
 
-			for each (Destination port in ports)
+			for (Destination port : ports)
 			{
 				if (this->ports[port].read(this, value)) return true;
 			}

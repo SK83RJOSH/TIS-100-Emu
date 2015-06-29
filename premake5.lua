@@ -6,6 +6,9 @@ solution "Tiscord"
 		language "C++"
 		targetdir "bin/%{cfg.buildcfg}"
 
+		configuration { "gmake" }
+			buildoptions { "-std=c++11" }
+
 		includedirs { "Core/include/" }
 		files { "Core/include/**.hpp", "Core/src/**.cpp" }
 
@@ -21,6 +24,9 @@ solution "Tiscord"
 		kind "ConsoleApp"
 		language "C++"
 		targetdir "bin/%{cfg.buildcfg}"
+
+		configuration { "gmake" }
+			buildoptions { "-std=c++11" }
 
 		includedirs { "Core/include/", "BytecodeTest/include/" }
 		links { "Core" }
