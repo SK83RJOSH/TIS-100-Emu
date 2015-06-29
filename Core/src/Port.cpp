@@ -1,5 +1,6 @@
 #include "Port.hpp"
 #include "Node.hpp"
+#include "Util.hpp"
 
 #include <algorithm>
 
@@ -10,7 +11,7 @@ namespace TIS
 		if (this->state == State::EMPTY || this->state == State::WAITING_FOR_DATA && this->lastNode != node)
 		{
 			this->state = State::HAS_DATA;
-			this->value = std::min(std::max(value, static_cast<short>(-999)), static_cast<short>(999));
+			this->value = Util::clamp(value, -999, 999);
 			this->lastNode = node;
 		}
 		else

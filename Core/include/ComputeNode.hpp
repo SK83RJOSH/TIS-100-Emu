@@ -11,14 +11,15 @@ namespace TIS
 	class ComputeNode : public Node
 	{
 	public:
-		ComputeNode() : Node(), acc(0), bak(0), currentInstruction(0) {};
+		ComputeNode();
 		void load(std::string const& code);
 		short getACC();
 		short getBAK();
 		virtual void step();
 	private:
-		short acc, bak;
-		size_t currentInstruction;
+		short acc = 0;
+		short bak = 0;
+		size_t instructionPointer = 0;
 		std::vector<Instruction> instructions;
 		bool read(Destination destination, short& value);
 		bool getArgumentValue(Instruction::Argument argument, short& value);

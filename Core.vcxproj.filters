@@ -30,6 +30,9 @@
     <ClInclude Include="Core\include\ComputeNode.hpp">
       <Filter>include</Filter>
     </ClInclude>
+    <ClInclude Include="Core\include\Util.hpp">
+      <Filter>include</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Core\src\Node.cpp">

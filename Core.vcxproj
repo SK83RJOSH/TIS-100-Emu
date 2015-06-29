@@ -92,6 +92,7 @@
     <ClInclude Include="Core\include\Port.hpp" />
     <ClInclude Include="Core\include\VirtualMachine.hpp" />
     <ClInclude Include="Core\include\Disassembler.hpp" />
+    <ClInclude Include="Core\include\Util.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Core\src\Assembler.cpp" />
