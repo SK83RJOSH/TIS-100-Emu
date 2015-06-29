@@ -27,16 +27,18 @@ namespace TIS
 
 		enum class State : unsigned char
 		{
-			UNLOCKED,
-			LOCKED,
+			IDLE,
+			WAIT,
 			DEADLOCK
 		};
 
 		State getState();
+		Port* getPort(Destination destination);
+		void setPort(Destination destination, Port* port);
 		virtual void step() = 0;
 	protected:
-		std::map<Destination, Port> ports;
-		Node() : state(State::UNLOCKED) {};
+		std::map<Destination, Port*> ports;
+		Node();
 		void setState(State state);
 	private:
 		State state;

@@ -44,43 +44,49 @@ int main()
 		return EXIT_FAILURE;
 	}
 
-	auto node = TIS::ComputeNode();
+	auto node_left = TIS::ComputeNode();
+	auto node_right = TIS::ComputeNode();
 
 	try
 	{
-		node.load(
-			"ADD 2\n"
-			"ADD ACC\n"
-			"SUB 3\n"
-			"NEG\n"
-			"NEG\n"
-			"JRO ACC\n"
-			"SWP\n"
-			"SWP\n"
-			"SAV\n"
+		node_left.load(
+			"MOV 1 RIGHT"
+		);
+		node_left.setPort(TIS::Node::Destination::RIGHT, node_right.getPort(TIS::Node::Destination::LEFT));
+		node_right.load(
+			"ADD LEFT"
 		);
 
 		std::cout << "\nComputeNode Test:" << std::endl;
 
 		auto start = std::chrono::high_resolution_clock::now();
+		auto steps = 0;
 
-		for (size_t i = 0; i < node.getInstructionCount(); i++)
+		//for (size_t i = 0; i < node_left.getInstructionCount(); i++)
+		//{
+		//	auto instruction = node_left.getCurrentInstruction();
+
+		//	std::cout << "----------------------" << std::endl;
+		//	std::cout << TIS::Disassembler::disassemble(&instruction, 1);
+		//	node_left.step();
+		//	std::cout	<< std::right
+		//				<< "ACC: " << std::setw(4) << node_left.getACC() << " | "
+		//				<< "BAK: " << std::setw(4) << node_left.getBAK()
+		//				<< std::endl;
+		//	std::cout << "----------------------" << std::endl;
+		//}
+
+		while (node_right.getACC() < 2)
 		{
-			auto instruction = node.getCurrentInstruction();
-
-			std::cout << "----------------------" << std::endl;
-			std::cout << TIS::Disassembler::disassemble(&instruction, 1);
-			node.step();
-			std::cout	<< std::right
-						<< "ACC: " << std::setw(4) << node.getACC() << " | "
-						<< "BAK: " << std::setw(4) << node.getBAK() 
-						<< std::endl;
-			std::cout << "----------------------" << std::endl;
+			node_left.step();
+			node_right.step();
+		
+			++steps;
 		}
 
 		std::cout << std::chrono::duration_cast<std::chrono::milliseconds>(
 			std::chrono::high_resolution_clock::now() - start
-		).count() << "ms" << std::endl;
+		).count() << "ms - " << steps << " steps" << std::endl;
 	}
 	catch (std::exception const& e)
 	{

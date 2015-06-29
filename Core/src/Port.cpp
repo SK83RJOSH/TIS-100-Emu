@@ -6,6 +6,11 @@
 
 namespace TIS
 {
+	Port::State Port::getState()
+	{
+		return this->state;
+	}
+
 	void Port::write(Node* node, short value)
 	{
 		if (this->state == State::EMPTY || this->state == State::WAITING_FOR_DATA && this->lastNode != node)

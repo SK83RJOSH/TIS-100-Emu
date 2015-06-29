@@ -7,7 +7,7 @@ namespace TIS
 	class Port
 	{
 	public:
-		enum State
+		enum class State
 		{
 			EMPTY,
 			WAITING_FOR_DATA,
@@ -15,6 +15,7 @@ namespace TIS
 		};
 
 		Port() : state(State::EMPTY) {};
+		State getState();
 		void write(Node* node, short value);
 		bool read(Node* node, short& value);
 	private:

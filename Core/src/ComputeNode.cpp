@@ -2,6 +2,8 @@
 #include "Assembler.hpp"
 #include "Util.hpp"
 
+#include <iostream>
+
 namespace TIS
 {
 	ComputeNode::ComputeNode()
@@ -83,13 +85,35 @@ namespace TIS
 		}
 		case Opcode::MOV:
 		{
-			short value;
+			auto destination = args[1].destination;
 
-			if (!this->getArgumentValue(args[0], value)) 
+			if (this->getState() == State::IDLE)
+			{
+				short value;
+
+				if (!this->getArgumentValue(args[0], value))
+					return;
+
+				this->write(destination, value);
 				return;
-			
-			// TODO: write(Argument, value)
-			this->ports[args[1].destination].write(this, value);
+			}
+			else
+			{
+				if (destination == Destination::ANY)
+				{
+					short value;
+
+					this->read(destination, value);
+					this->write(destination, value);
+					return;
+				}
+				else {
+					if (this->ports[destination]->getState() != Port::State::EMPTY)
+						return;
+
+					this->setState(State::IDLE);
+				}
+			}
 			break;
 		}
 		}
@@ -128,11 +152,11 @@ namespace TIS
 				Destination::RIGHT, Destination::DOWN };
 
 			for (Destination port : ports)
-				if (this->ports[port].read(this, value)) 
+				if (this->ports[port]->read(this, value)) 
 					return true;
 		}
 		default:
-			return this->ports[destination].read(this, value);
+			return this->ports[destination]->read(this, value);
 		}
 
 		return false;
@@ -147,5 +171,40 @@ namespace TIS
 		}
 
 		return this->read(argument.destination, value);
+	}
+
+	void ComputeNode::write(Destination destination, short value)
+	{
+		switch (destination)
+		{
+		// Don't write in the case of NIL
+		case Destination::NIL:
+			break;
+		case Destination::ACC:
+			this->acc = value;
+			break;
+		default:
+			if (this->ports[destination]->getState() != Port::State::WAITING_FOR_DATA)
+				this->setState(State::WAIT);
+
+			if (destination == Destination::ANY)
+			{
+				Destination ports[4] = {
+					Destination::LEFT, Destination::UP,
+					Destination::RIGHT, Destination::DOWN };
+
+				for (Destination port : ports)
+				{
+					if (this->ports[port]->getState() == Port::State::WAITING_FOR_DATA)
+					{
+						this->ports[port]->write(this, value);
+						this->setState(State::IDLE);
+						return;
+					}
+				}
+			}
+			
+			this->ports[destination]->write(this, value);
+		}
 	}
 }

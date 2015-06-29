@@ -29,5 +29,6 @@ namespace TIS
 		std::vector<Instruction> instructions;
 		bool read(Destination destination, short& value);
 		bool getArgumentValue(Instruction::Argument argument, short& value);
+		void write(Destination destination, short value);
 	};
 }
