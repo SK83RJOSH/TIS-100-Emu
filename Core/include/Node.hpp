@@ -33,10 +33,10 @@ namespace TIS
 		State getState();
 		virtual void step() = 0;
 	protected:
-		Node();
+		std::map<Destination, Port> ports;
+		Node() : state(State::UNLOCKED) {};
 		void setState(State state);
 	private:
 		State state;
-		std::map<Destination, Port> ports;
 	};
 }
