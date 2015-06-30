@@ -2,6 +2,7 @@
 
 #include <sstream>
 #include <set>
+#include <algorithm>
 
 namespace TIS { namespace Disassembler {
 

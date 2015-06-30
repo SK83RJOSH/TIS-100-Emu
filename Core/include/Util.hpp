@@ -6,9 +6,9 @@ namespace TIS
 {
 	namespace Util
 	{
-		template <typename T, typename U>
-		typename std::common_type<T, U>::type 
-		clamp(T in, U low, U high)
+		template <typename X, typename Y, typename Z>
+		typename std::common_type<X, Y, Z>::type
+		clamp(X in, Y low, Z high)
 		{
 			if (in < low)
 				return low;

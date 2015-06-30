@@ -1,9 +1,10 @@
 #include "Assembler.hpp"
 
 #include <deque>
+#include <algorithm>
 
-namespace TIS { namespace Assembler	{
-	
+namespace TIS { namespace Assembler {
+
 	struct Token
 	{
 		enum class Type
