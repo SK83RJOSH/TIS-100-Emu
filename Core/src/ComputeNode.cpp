@@ -13,6 +13,7 @@ namespace TIS
 	void ComputeNode::load(std::string const& code)
 	{
 		this->instructions = TIS::Assembler::assemble(code);
+		this->setState(State::INITIAL);
 	}
 
 	short ComputeNode::getACC()
@@ -27,6 +28,12 @@ namespace TIS
 
 	void ComputeNode::step()
 	{
+		if (this->getState() == State::INITIAL)
+		{
+			this->setState(State::IDLE);
+			return;
+		}
+
 		if (this->getState() == State::DEADLOCK || this->instructions.size() == 0) 
 			return;
 
@@ -61,7 +68,7 @@ namespace TIS
 
 			auto newInstructionPointer = this->instructionPointer + value;			
 			this->instructionPointer = Util::clamp(newInstructionPointer, 0u, this->instructions.size() - 1);
-			return;
+			break;
 		}
 		case Opcode::ADD:
 		{
@@ -87,33 +94,15 @@ namespace TIS
 		{
 			auto destination = args[1].destination;
 
-			if (this->getState() == State::IDLE)
+			short sourceValue = 0;
+			if (!this->getArgumentValue(args[0], sourceValue))
 			{
-				short value;
-
-				if (!this->getArgumentValue(args[0], value))
-					return;
-
-				this->write(destination, value);
-				return;
+				// no value
+				// TODO: Handle
+				break;
 			}
-			else
-			{
-				if (destination == Destination::ANY)
-				{
-					short value;
 
-					this->read(destination, value);
-					this->write(destination, value);
-					return;
-				}
-				else {
-					if (this->ports[destination]->getState() != Port::State::EMPTY)
-						return;
-
-					this->setState(State::IDLE);
-				}
-			}
+			this->write(destination, sourceValue);
 			break;
 		}
 		}
@@ -145,18 +134,9 @@ namespace TIS
 			value = this->acc;
 			return true;
 		}
-		case Destination::ANY:
-		{
-			Destination ports[4] = { 
-				Destination::LEFT, Destination::UP, 
-				Destination::RIGHT, Destination::DOWN };
-
-			for (Destination port : ports)
-				if (this->ports[port]->read(this, value)) 
-					return true;
-		}
 		default:
-			return this->ports[destination]->read(this, value);
+			this->setState(State::READ);
+			return this->getPortValue(value);
 		}
 
 		return false;
@@ -183,28 +163,24 @@ namespace TIS
 		case Destination::ACC:
 			this->acc = value;
 			break;
-		default:
-			if (this->ports[destination]->getState() != Port::State::WAITING_FOR_DATA)
-				this->setState(State::WAIT);
-
-			if (destination == Destination::ANY)
-			{
-				Destination ports[4] = {
-					Destination::LEFT, Destination::UP,
-					Destination::RIGHT, Destination::DOWN };
-
-				for (Destination port : ports)
-				{
-					if (this->ports[port]->getState() == Port::State::WAITING_FOR_DATA)
-					{
-						this->ports[port]->write(this, value);
-						this->setState(State::IDLE);
-						return;
-					}
-				}
-			}
-			
-			this->ports[destination]->write(this, value);
+		case Destination::UP:
+			if (this->up)
+				this->up->setPortValue(value);
+			break;
+		case Destination::DOWN:
+			if (this->down)
+				this->down->setPortValue(value);
+			break;
+		case Destination::LEFT:
+			if (this->left)
+				this->left->setPortValue(value);
+			break;
+		case Destination::RIGHT:
+			if (this->right)
+				this->right->setPortValue(value);
+			break;
 		}
+
+		this->setState(State::WRITE);
 	}
 }

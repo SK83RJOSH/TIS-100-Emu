@@ -1,14 +1,34 @@
 #include "Node.hpp"
 
 namespace TIS {
-	Node::Node() : state(State::IDLE)
+	Node::Node()
 	{
-		this->setPort(Destination::UP, new Port());
-		this->setPort(Destination::DOWN, new Port());
-		this->setPort(Destination::LEFT, new Port());
-		this->setPort(Destination::RIGHT, new Port());
-		this->setPort(Destination::ANY, new Port());
-		this->setPort(Destination::LAST, new Port());
+	}
+
+	bool Node::getPortValue(short& portValue)
+	{
+		if (this->getState() != State::READ)
+			return false;
+
+		bool ret = false;
+
+		if (this->oldHasPortValue)
+		{
+			portValue = this->oldPortValue;
+			this->hasPortValue = false;
+			ret = true;
+		}
+
+		this->oldHasPortValue = this->hasPortValue;
+		this->oldPortValue = this->portValue;
+
+		return ret;
+	}
+
+	void Node::setPortValue(short portValue)
+	{
+		this->portValue = portValue;
+		this->hasPortValue = true;
 	}
 
 	void Node::setState(State state)
@@ -16,18 +36,16 @@ namespace TIS {
 		this->state = state;
 	}
 
-	Node::State Node::getState()
+	Node::State Node::getState() const
 	{
 		return this->state;
 	}
 
-	Port* Node::getPort(Destination destination)
+	char const* Node::getStateString() const
 	{
-		return this->ports[destination];
-	}
+		static char const* strings[] = 
+			{"INITIAL", "IDLE", "READ", "WRITE", "DEADLOCK"};
 
-	void Node::setPort(Destination destination, Port* port)
-	{
-		this->ports[destination] = port;
+		return strings[static_cast<int>(this->getState())];
 	}
 }

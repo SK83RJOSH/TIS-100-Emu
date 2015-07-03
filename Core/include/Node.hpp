@@ -1,7 +1,5 @@
 #pragma once
 
-#include "Port.hpp"
-
 #include <map>
 #include <string>
 
@@ -9,8 +7,8 @@ namespace TIS
 {
 	class Node
 	{
-	friend class Port;
 	public:
+		Node();
 		virtual ~Node() {}
 
 		enum class Destination : unsigned char
@@ -27,20 +25,37 @@ namespace TIS
 
 		enum class State : unsigned char
 		{
+			INITIAL,
 			IDLE,
-			WAIT,
+			READ,
+			WRITE,
 			DEADLOCK
 		};
 
-		State getState();
-		Port* getPort(Destination destination);
-		void setPort(Destination destination, Port* port);
+		State getState() const;
+		char const* getStateString() const;
 		virtual void step() = 0;
+
+		// Called on the port *receiving*
+		bool getPortValue(short& portValue);
+		void setPortValue(short portValue);
+
+		Node* up = nullptr;
+		Node* down = nullptr;
+		Node* left = nullptr;
+		Node* right = nullptr;
+
 	protected:
-		std::map<Destination, Port*> ports;
-		Node();
 		void setState(State state);
+
+		// This buffer exists as transmission is a step in itself
+		short oldPortValue = 0;
+		bool oldHasPortValue = false;
+
+		short portValue = 0;
+		bool hasPortValue = false;
+
 	private:
-		State state;
+		State state = State::IDLE;
 	};
 }

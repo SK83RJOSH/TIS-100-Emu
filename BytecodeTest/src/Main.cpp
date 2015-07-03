@@ -44,43 +44,49 @@ int main()
 		return EXIT_FAILURE;
 	}
 
-	auto node_left = TIS::ComputeNode();
-	auto node_right = TIS::ComputeNode();
+	TIS::ComputeNode nodeLeft;
+	TIS::ComputeNode nodeRight;
+
+	nodeLeft.right = &nodeRight;
+	nodeRight.left = &nodeLeft;
 
 	try
 	{
-		node_left.load(
-			"MOV 1 RIGHT"
-		);
-		node_left.setPort(TIS::Node::Destination::RIGHT, node_right.getPort(TIS::Node::Destination::LEFT));
-		node_right.load(
-			"ADD LEFT"
-		);
+		nodeLeft.load("MOV 1, RIGHT");
+		nodeRight.load("ADD LEFT");
 
 		std::cout << "\nComputeNode Test:" << std::endl;
 
 		auto start = std::chrono::high_resolution_clock::now();
 		auto steps = 0;
 
-		//for (size_t i = 0; i < node_left.getInstructionCount(); i++)
-		//{
-		//	auto instruction = node_left.getCurrentInstruction();
-
-		//	std::cout << "----------------------" << std::endl;
-		//	std::cout << TIS::Disassembler::disassemble(&instruction, 1);
-		//	node_left.step();
-		//	std::cout	<< std::right
-		//				<< "ACC: " << std::setw(4) << node_left.getACC() << " | "
-		//				<< "BAK: " << std::setw(4) << node_left.getBAK()
-		//				<< std::endl;
-		//	std::cout << "----------------------" << std::endl;
-		//}
-
-		while (node_right.getACC() < 2)
+		while (nodeRight.getACC() < 2)
 		{
-			node_left.step();
-			node_right.step();
-		
+			auto instruction = nodeLeft.getCurrentInstruction();
+
+			std::cout << "Step " << steps << std::endl;
+
+			std::cout << "nodeLeft: " << TIS::Disassembler::disassemble(&instruction, 1);
+			nodeLeft.step();
+			std::cout	<< std::right
+						<< "ACC: " << std::setw(4) << nodeLeft.getACC() << " | "
+						<< "BAK: " << std::setw(4) << nodeLeft.getBAK() << " | "
+						<< "STATE: " << nodeLeft.getStateString()
+						<< std::endl;
+			std::cout << "------------------------------------" << std::endl;
+			
+			instruction = nodeRight.getCurrentInstruction();
+
+			std::cout << "nodeRight: " << TIS::Disassembler::disassemble(&instruction, 1);
+			nodeRight.step();
+			std::cout	<< std::right
+						<< "ACC: " << std::setw(4) << nodeRight.getACC() << " | "
+						<< "BAK: " << std::setw(4) << nodeRight.getBAK() << " | "
+						<< "STATE: " << nodeRight.getStateString()
+						<< std::endl;
+			std::cout << "------------------------------------" << std::endl;
+			std::cout << std::endl;
+
 			++steps;
 		}
 
